@@ -106,14 +106,14 @@ function musicInit() {
   const f = (C.music.file || '').trim();
   if (f && !audBad) { if (aud.getAttribute('src') !== f) aud.setAttribute('src', f); $('#btnMute').hidden = false; }
   else { $('#btnMute').hidden = true; }
-  $('#btnMusic').setAttribute('aria-label', f && !audBad ? 'Music play/pause' : 'Song kholo (' + (C.music.title || 'song') + ')');
+  $('#btnMusic').setAttribute('aria-label', f && !audBad ? 'Music play/pause' : 'Song kholiye (' + (C.music.title || 'song') + ')');
   const t = $('#soundToggle'); if (t) t.textContent = f && !audBad ? (aud.paused ? '♪ Play song' : '❚❚ Pause song') : '♪ ' + (C.music.title || 'Song');
 }
-aud.addEventListener('error', () => { if (aud.getAttribute('src')) { audBad = true; toast('Music file nahi mili. Song ka link use karo 🎧'); musicInit(); } });
+aud.addEventListener('error', () => { if (aud.getAttribute('src')) { audBad = true; toast('Music file nahi mili. Song ka link use kijiye 🎧'); musicInit(); } });
 function musicAction() {
   const f = (C.music.file || '').trim();
-  if (!f || audBad) { if (C.music.link) { window.open(C.music.link, '_blank', 'noopener'); toast('Song ka link khul raha hai. Wahan se play karo 🎧'); } return; }
-  if (aud.paused) aud.play().then(() => { $('#btnMusic').textContent = '❚❚'; musicInit(); }).catch(() => toast('Music play nahi ho paya. Dobara tap karo.'));
+  if (!f || audBad) { if (C.music.link) { window.open(C.music.link, '_blank', 'noopener'); toast('Song ka link khul raha hai. Wahan se play kijiye 🎧'); } return; }
+  if (aud.paused) aud.play().then(() => { $('#btnMusic').textContent = '❚❚'; musicInit(); }).catch(() => toast('Music play nahi ho paya. Dobara tap kijiye.'));
   else { aud.pause(); $('#btnMusic').textContent = '♪'; musicInit(); }
 }
 $('#btnMusic').addEventListener('click', musicAction);
@@ -158,8 +158,8 @@ $('#btnMenu').addEventListener('click', () => { $('#menu').hidden = false; });
 
 /* ---------- page builders ---------- */
 function b0() {
-  const env = h('div', { class: 'env', id: 'env', role: 'button', tabindex: '0', 'aria-label': 'Envelope kholo' },
-    h('div', { class: 'env-back' }), h('div', { class: 'env-paper', text: C.nickname + ' ❤' }), h('div', { class: 'env-front' }), h('div', { class: 'env-flap' }), h('div', { class: 'env-seal', text: '❤' }));
+  const env = h('div', { class: 'env', id: 'env', role: 'button', tabindex: '0', 'aria-label': 'Envelope kholiye' },
+    h('div', { class: 'env-back' }), h('div', { class: 'env-paper', text: (C.hero.envText || (C.nickname + ' ❤')) }), h('div', { class: 'env-front' }), h('div', { class: 'env-flap' }), h('div', { class: 'env-seal', text: '❤' }));
   const open = () => { if (env.classList.contains('open')) return; env.classList.add('open'); confetti(70, .5, .45); setTimeout(() => go(1), RM ? 200 : 1200); };
   env.addEventListener('click', open); env.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
   return h('div', { class: 'wrap' }, eyebrow('A digital love story'), h('h1', { class: 'glow', text: C.hero.heading }), h('div', { class: 'name-script', text: C.name }), h('p', { class: 'sub', text: C.hero.subtitle }), env,
@@ -173,7 +173,7 @@ function showNote(text) {
 $('#noteModal').addEventListener('click', e => { if (e.target.id === 'noteModal') e.target.hidden = true; });
 function b1() {
   const grid = h('div', { class: 'env-grid' });
-  C.notes.forEach((n, i) => { const b = h('button', { class: 'mini', type: 'button', 'aria-label': 'Note ' + (i + 1) + ' kholo', onclick: () => { b.classList.add('opened'); showNote(n); } }, h('span', { class: 'mini-flap' }), h('span', { class: 'mini-num', text: i + 1 })); grid.appendChild(b); });
+  C.notes.forEach((n, i) => { const b = h('button', { class: 'mini', type: 'button', 'aria-label': 'Note ' + (i + 1) + ' kholiye', onclick: () => { b.classList.add('opened'); showNote(n); } }, h('span', { class: 'mini-flap' }), h('span', { class: 'mini-num', text: i + 1 })); grid.appendChild(b); });
   return h('div', { class: 'wrap' }, eyebrow('Chapter 02'), h('h2', { text: C.titles.notes }), h('p', { class: 'sub', text: C.subs.notes }), grid);
 }
 function b2() {
@@ -194,8 +194,8 @@ const LAYOUTS = {
   6: [[1, 1, 4, 4], [1, 4, 4, 7], [4, 1, 7, 3], [4, 3, 7, 5], [4, 5, 7, 7], [7, 1, 9, 7]]
 };
 let memView = 'gallery';
-function uploadControl(label) {
-  const inp = h('input', { type: 'file', accept: 'image/*', multiple: true, hidden: true, onchange: async () => { await addPhotos([...inp.files]); inp.value = ''; } });
+function uploadControl(label, handler) {
+  const inp = h('input', { type: 'file', accept: 'image/*', multiple: true, hidden: true, onchange: async () => { await (handler || addPhotos)([...inp.files]); inp.value = ''; } });
   return h('label', { class: 'btn small upl' }, label || '📷 Photos upload karo', inp);
 }
 function galleryNode() {
@@ -203,20 +203,29 @@ function galleryNode() {
   const g = h('div', { class: 'gallery' });
   items.forEach((p, k) => {
     const rot = (((k * 37) % 7) - 3) * 1.2;
-    const card = h('figure', { class: 'polaroid', style: '--r:' + rot + 'deg', tabindex: p.src ? '0' : null, role: p.src ? 'button' : null, 'aria-label': p.src ? 'Photo ' + (k + 1) + ' bada karo' : null },
-      p.src ? h('img', { src: p.src, alt: p.caption || ('Photo ' + (k + 1)), loading: 'lazy' }) : h('div', { class: 'ph' }, h('span', { text: '📷' }), h('small', { text: 'Yahan tumhari photo aayegi' })),
+    const card = h('figure', { class: 'polaroid', style: '--r:' + rot + 'deg', tabindex: p.src ? '0' : null, role: p.src ? 'button' : null, 'aria-label': p.src ? 'Photo ' + (k + 1) + ' bada kijiye' : null },
+      p.src ? h('img', { src: p.src, alt: p.caption || ('Photo ' + (k + 1)), loading: 'lazy' }) : h('div', { class: 'ph' }, h('span', { text: '📷' }), h('small', { text: 'Yahan aapki photo aayegi' })),
       h('figcaption', { class: 'hand', text: p.caption || '' }));
     if (p.src) { card.addEventListener('click', () => openLB(k)); card.addEventListener('keydown', e => { if (e.key === 'Enter') openLB(k); }); }
     g.appendChild(card);
   });
   return g;
 }
+let GP = [];
+const collageSrc = () => (GP.length ? GP : C.photos);
+async function addGuestPhotos(files) {
+  let n = 0; if (files.length > 6) toast('Collage me pehli 6 photos hi aayengi'); else toast('Photos taiyaar ho rahi hain...');
+  const fresh = [];
+  for (const f of files.slice(0, 6)) { if (!/^image\//.test(f.type)) continue; try { fresh.push({ src: await compress(f), caption: '' }); n++; } catch (e) {} }
+  if (n) { GP = fresh; memView = 'collage'; drawMem(); toast('Aapka collage taiyaar hai 💖'); } else toast('Photo load nahi ho payi. Dobara try kijiye.');
+}
 function collageNode() {
-  const ph = C.photos.slice(0, 6), count = ph.length || 4, L = LAYOUTS[count];
+  const ph = collageSrc().slice(0, 6), count = ph.length || 4, L = LAYOUTS[count];
   const frame = h('div', { class: 'collage' }, ...L.map((a, k) => h('div', { class: 'cell', style: 'grid-area:' + a.join('/') }, ph[k] ? h('img', { src: ph[k].src, alt: ph[k].caption || '' }) : '❤')),
     C.collageTitle ? h('div', { class: 'collage-title hand', text: C.collageTitle }) : null);
-  const row = h('div', { class: 'btnrow', style: 'margin-top:14px' }, h('button', { class: 'btn small', type: 'button', text: '⬇ Collage download karo', onclick: downloadCollage }));
-  return h('div', {}, frame, row);
+  const row = h('div', { class: 'btnrow', style: 'margin-top:14px' }, h('button', { class: 'btn small', type: 'button', text: '⬇ Collage download kijiye', onclick: downloadCollage }));
+  const mine = h('div', { class: 'btnrow', style: 'margin-top:12px' }, uploadControl('📷 Apni photos chuniye', addGuestPhotos), GP.length ? h('button', { class: 'btn small ghost', type: 'button', text: '↺ Dobara shuru', onclick: () => { GP = []; drawMem(); } }) : null);
+  return h('div', {}, frame, row, mine, h('p', { class: 'hint', text: 'Gallery se 6 tak photos chuniye, collage khud ban jayega. Aapki photos sirf aapke phone me rehti hain, kahin save ya share nahi hotin.' }));
 }
 function drawMem() {
   const body = $('#memBody'); if (!body) return;
@@ -250,8 +259,8 @@ function renderLB() {
 function loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }); }
 function rr(c, x, y, w, hh, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + hh, r); c.arcTo(x + w, y + hh, x, y + hh, r); c.arcTo(x, y + hh, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
 async function downloadCollage() {
-  const ph = C.photos.slice(0, 6);
-  if (!ph.length) { toast('Pehle kuch photos add karo 📷'); return; }
+  const ph = collageSrc().slice(0, 6);
+  if (!ph.length) { toast('Pehle kuch photos chuniye 📷'); return; }
   try {
     const W = 1080, H = 1440, pd = 26, gap = 8, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const c = cv.getContext('2d');
     const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#51182F'); g.addColorStop(1, '#2B0D1C'); c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -267,7 +276,7 @@ async function downloadCollage() {
       c.fillStyle = '#D8B477'; c.textAlign = 'center'; c.fillText(C.collageTitle, W / 2, ty + 8);
     }
     cv.toBlob(b => { const a = h('a', { href: URL.createObjectURL(b), download: 'deepanshi-collage.jpg' }); document.body.appendChild(a); a.click(); a.remove(); toast('Collage download ho gaya 💖'); }, 'image/jpeg', .92);
-  } catch (e) { toast('Collage bana nahi paya. Dobara try karo.'); }
+  } catch (e) { toast('Collage bana nahi paya. Dobara try kijiye.'); }
 }
 
 function b4() {
@@ -281,7 +290,7 @@ function b4() {
 function b5() {
   const g = h('div', { class: 'flips' });
   C.reasons.forEach((r, i) => {
-    const b = h('button', { class: 'flip', type: 'button', 'aria-pressed': 'false', 'aria-label': r.title + '. Tap karke palat do.', onclick: () => { const f = b.classList.toggle('flipped'); b.setAttribute('aria-pressed', f); } },
+    const b = h('button', { class: 'flip', type: 'button', 'aria-pressed': 'false', 'aria-label': r.title + '. Tap karke palat dijiye.', onclick: () => { const f = b.classList.toggle('flipped'); b.setAttribute('aria-pressed', f); } },
       h('div', { class: 'flip-in' }, h('div', { class: 'face front' }, h('div', { class: 'n', text: pad(i + 1) }), h('h3', { text: r.title }), h('span', { text: '♡' })), h('div', { class: 'face back' }, h('span', { text: '❤' }), h('div', { text: r.text }))));
     g.appendChild(b);
   });
@@ -304,7 +313,7 @@ function b6() {
   const box = (id, l) => h('div', { class: 'cd-box card' }, h('b', { id, text: '--' }), h('small', { text: l }));
   return h('div', { class: 'wrap' }, eyebrow('Chapter 07'), h('h2', { text: C.titles.countdown }), h('p', { class: 'sub', id: 'cdSub', text: C.subs.countdown }),
     h('div', { class: 'cd', id: 'cd', role: 'timer', 'aria-label': 'Birthday countdown' }, box('cd-d', 'Days'), box('cd-h', 'Hours'), box('cd-m', 'Minutes'), box('cd-s', 'Seconds')),
-    h('div', { class: 'live', id: 'cdLive', hidden: true }, h('p', { text: 'Happy Birthday, ' + C.nickname + '! 🎂' }), h('button', { class: 'btn', type: 'button', text: 'Celebration shuru karo 🎉', onclick: () => go(7) })));
+    h('div', { class: 'live', id: 'cdLive', hidden: true }, h('p', { text: 'Happy Birthday, ' + C.nickname + '! 🎂' }), h('button', { class: 'btn', type: 'button', text: 'Celebration shuru kijiye 🎉', onclick: () => go(7) })));
 }
 
 /* cake */
@@ -323,7 +332,7 @@ const CAKE_SVG = '<svg viewBox="0 0 320 300" class="cake" role="group" aria-labe
 '<ellipse cx="160" cy="268" rx="152" ry="15" fill="#D8B477"/><ellipse cx="160" cy="264" rx="146" ry="12" fill="#E8CB93"/>' +
 '<g clip-path="url(#cR)"><use href="#face"/></g><g clip-path="url(#cL)"><use href="#body"/></g>' +
 '<g id="slice"><g clip-path="url(#cR)"><use href="#body"/></g></g>' +
-[95, 125, 155, 185, 210].map((x, i) => '<g class="candle" tabindex="0" role="button" aria-label="Candle ' + (i + 1) + ' bujhao" transform="translate(' + x + ',0)"><rect x="-15" y="30" width="30" height="62" fill="transparent"/><rect x="-4" y="58" width="8" height="30" rx="2" fill="#D8B477"/><rect x="-4" y="68" width="8" height="4" fill="#51182F" opacity=".4"/><path class="flame" d="M0 36 C-8 46 -6 58 0 58 C6 58 8 46 0 36Z" fill="#FFB347"/><path class="flame-in" d="M0 45 C-4 50 -3 56 0 56 C3 56 4 50 0 45Z" fill="#FFF1B8"/><path class="smoke" d="M0 50 q-6 -10 0 -18 q6 -8 0 -18"/></g>').join('') +
+[95, 125, 155, 185, 210].map((x, i) => '<g class="candle" tabindex="0" role="button" aria-label="Candle ' + (i + 1) + ' bujhaiye" transform="translate(' + x + ',0)"><rect x="-15" y="30" width="30" height="62" fill="transparent"/><rect x="-4" y="58" width="8" height="30" rx="2" fill="#D8B477"/><rect x="-4" y="68" width="8" height="4" fill="#51182F" opacity=".4"/><path class="flame" d="M0 36 C-8 46 -6 58 0 58 C6 58 8 46 0 36Z" fill="#FFB347"/><path class="flame-in" d="M0 45 C-4 50 -3 56 0 56 C3 56 4 50 0 45Z" fill="#FFF1B8"/><path class="smoke" d="M0 50 q-6 -10 0 -18 q6 -8 0 -18"/></g>').join('') +
 '<g class="knife"><rect x="219" y="-60" width="12" height="70" rx="4" fill="#51182F"/><rect x="217" y="6" width="16" height="6" fill="#D8B477"/><path d="M222 12 L229 12 L229 264 Q225.5 272 222 264 Z" fill="#e9edf2" stroke="#9aa3ad" stroke-width="1"/></g></svg>';
 
 function makeWish() {
@@ -337,18 +346,18 @@ function makeWish() {
 function b7() {
   const wrap = h('div', { class: 'cake-wrap' }); wrap.innerHTML = CAKE_SVG;
   const svg = $('svg', wrap), candles = $$('.candle', wrap);
-  const msg = h('p', { class: 'cake-msg', 'aria-live': 'polite', text: 'Candles pe tap karo ya neeche ka button dabao 🕯️' });
+  const msg = h('p', { class: 'cake-msg', 'aria-live': 'polite', text: 'Candles pe tap kijiye ya neeche ka button dabaiye 🕯️' });
   const title = h('h2', { class: 'bday-title', 'aria-label': C.cake.title }, ...[...(C.cake.title || '')].map((ch, i) => h('span', { 'aria-hidden': 'true', style: '--i:' + i, text: ch === ' ' ? '\u00a0' : ch })));
   let out = 0;
   const blow = c => { if (c.classList.contains('out')) return; c.classList.add('out'); out++; if (out === candles.length) { confetti(180); hearts(10); msg.textContent = C.cake.message; } };
   candles.forEach(c => { c.addEventListener('click', () => blow(c)); c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); blow(c); } }); });
-  const blowAll = h('button', { class: 'btn small', type: 'button', text: '💨 Saari candles bujhao', onclick: () => { candles.forEach((c, i) => setTimeout(() => blow(c), RM ? 0 : i * 180)); } });
+  const blowAll = h('button', { class: 'btn small', type: 'button', text: '💨 Saari candles bujhaiye', onclick: () => { candles.forEach((c, i) => setTimeout(() => blow(c), RM ? 0 : i * 180)); } });
   let cut = false;
-  const cutBtn = h('button', { class: 'btn small', type: 'button', text: '🔪 Cake kaato', onclick: () => {
-    if (!cut) { cut = true; cutBtn.textContent = '↺ Cake wapas jodo'; svg.classList.remove('cut'); svg.classList.add('cutting'); setTimeout(() => { svg.classList.add('cut'); confetti(170, .5, .55); hearts(8); msg.textContent = C.cake.cutMessage; }, RM ? 0 : 900); }
-    else { cut = false; cutBtn.textContent = '🔪 Cake kaato'; svg.classList.remove('cut', 'cutting'); }
+  const cutBtn = h('button', { class: 'btn small', type: 'button', text: '🔪 Cake kaatiye', onclick: () => {
+    if (!cut) { cut = true; cutBtn.textContent = '↺ Cake wapas jodiye'; svg.classList.remove('cut'); svg.classList.add('cutting'); setTimeout(() => { svg.classList.add('cut'); confetti(170, .5, .55); hearts(8); msg.textContent = C.cake.cutMessage; }, RM ? 0 : 900); }
+    else { cut = false; cutBtn.textContent = '🔪 Cake kaatiye'; svg.classList.remove('cut', 'cutting'); }
   } });
-  const relight = h('button', { class: 'btn small ghost', type: 'button', text: '🕯️ Candles dobara jalao', onclick: () => { candles.forEach(c => c.classList.remove('out')); out = 0; msg.textContent = 'Candles pe tap karo ya neeche ka button dabao 🕯️'; } });
+  const relight = h('button', { class: 'btn small ghost', type: 'button', text: '🕯️ Candles dobara jalaiye', onclick: () => { candles.forEach(c => c.classList.remove('out')); out = 0; msg.textContent = 'Candles pe tap kijiye ya neeche ka button dabaiye 🕯️'; } });
   return h('div', { class: 'wrap' }, eyebrow('Chapter 08'), title, wrap, msg,
     h('div', { class: 'btnrow' }, blowAll, cutBtn, h('button', { class: 'btn small', type: 'button', text: '🌠 Make a Wish', onclick: makeWish }), relight),
     h('button', { class: 'btn ghost small', type: 'button', text: '🎉 Confetti', onclick: () => confetti(200) }));
@@ -358,9 +367,9 @@ function b7() {
 function b8() {
   let mood = '';
   const moods = [['😊', 'Happy'], ['🥹', 'Emotional'], ['😲', 'Surprised'], ['😶', 'Speechless'], ['🥰', 'Loved']];
-  const grid = h('div', { class: 'moods', role: 'radiogroup', 'aria-label': 'Tumhara mood' });
+  const grid = h('div', { class: 'moods', role: 'radiogroup', 'aria-label': 'Aapka mood' });
   moods.forEach(([e, l]) => { const b = h('button', { type: 'button', class: 'mood', role: 'radio', 'aria-checked': 'false', 'aria-label': l, onclick: () => { mood = l; $$('.mood', grid).forEach(x => { const on = x === b; x.classList.toggle('sel', on); x.setAttribute('aria-checked', on); }); } }, h('span', { class: 'em', text: e }), h('small', { text: l })); grid.appendChild(b); });
-  const ta = h('textarea', { rows: '5', maxlength: '1500', placeholder: C.feedback.placeholder || '', 'aria-label': 'Tumhara message' });
+  const ta = h('textarea', { rows: '5', maxlength: '1500', placeholder: C.feedback.placeholder || '', 'aria-label': 'Aapka message' });
   const status = h('p', { class: 'fb-status', role: 'status' });
   const btn = h('button', { class: 'btn', type: 'submit', text: C.feedback.button || 'Send ❤️' });
   const ep = (C.feedback.endpoint || '').trim();
@@ -371,13 +380,13 @@ function b8() {
   };
   const form = h('form', { class: 'fb card', novalidate: true, onsubmit: async e => {
     e.preventDefault();
-    if (!mood && !ta.value.trim()) { status.textContent = 'Mood chuno ya kuch likho 🙂'; return; }
+    if (!mood && !ta.value.trim()) { status.textContent = 'Mood chuniye ya kuch likhiye 🙂'; return; }
     const rec = { from: C.name, mood, message: ta.value.trim(), at: new Date().toISOString() };
     try { const a = JSON.parse(localStorage.getItem('dx_feedback') || '[]'); a.push(rec); localStorage.setItem('dx_feedback', JSON.stringify(a)); } catch (x) {}
     if (!ep) { thanks(false); return; }
     btn.disabled = true; status.textContent = 'Bhej rahe hain...';
     try { const r = await fetch(ep, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify(rec) }); if (!r.ok) throw new Error('bad'); thanks(true); }
-    catch (x) { btn.disabled = false; status.textContent = 'Abhi bhej nahi paye 😕 Internet check karke dobara try karo.'; }
+    catch (x) { btn.disabled = false; status.textContent = 'Abhi bhej nahi paye 😕 Internet check karke dobara try kijiye.'; }
   } }, grid, ta, status, btn);
   return h('div', { class: 'wrap' }, eyebrow('Chapter 09'), h('h2', { text: C.feedback.heading }), EDIT && !ep ? h('p', { class: 'warn', text: '⚠️ Edit mode: Formspree endpoint set nahi hai, toh jawab tumhe nahi milenge. Editor > Feedback me link daalo.' }) : null, form);
 }
@@ -394,12 +403,12 @@ function showFinale() {
     h('h2', { class: 'fin-title', style: 'animation:rise2 1.2s .2s both', text: L[0] || '' }),
     ...L.slice(1).map((t, i) => h('p', { class: 'fin-line', style: '--d:' + (1 + i * 1.1) + 's', text: t })),
     C.final.wish ? h('p', { class: 'fin-wish hand', style: '--d:' + (1 + L.length * 1.1) + 's', text: C.final.wish }) : null,
-    h('div', { class: 'btnrow', style: 'margin-top:12px' }, h('button', { class: 'btn small', type: 'button', text: 'Wapas', onclick: closeFinale }), h('button', { class: 'btn ghost small', type: 'button', text: 'Shuru se dekho', onclick: () => { closeFinale(); go(0); } }))));
+    h('div', { class: 'btnrow', style: 'margin-top:12px' }, h('button', { class: 'btn small', type: 'button', text: 'Wapas', onclick: closeFinale }), h('button', { class: 'btn ghost small', type: 'button', text: 'Shuru se dekhiye', onclick: () => { closeFinale(); go(0); } }))));
   f.hidden = false; hearts(16, f);
 }
 function b9() {
-  const gift = h('button', { class: 'gift', type: 'button', 'aria-label': 'Gift box kholo', onclick: openGift }, h('span', { class: 'g-box' }), h('span', { class: 'g-lid' }), h('span', { class: 'g-rib' }));
-  return h('div', { class: 'wrap' }, eyebrow('Chapter 10'), h('h1', { class: 'glow', text: C.final.heading }), gift, h('p', { class: 'sub', text: 'Tap karke kholo 🎁' }));
+  const gift = h('button', { class: 'gift', type: 'button', 'aria-label': 'Gift box kholiye', onclick: openGift }, h('span', { class: 'g-box' }), h('span', { class: 'g-lid' }), h('span', { class: 'g-rib' }));
+  return h('div', { class: 'wrap' }, eyebrow('Chapter 10'), h('h1', { class: 'glow', text: C.final.heading }), gift, h('p', { class: 'sub', text: 'Tap kijiye aur kholiye 🎁' }));
 }
 
 /* ---------- render ---------- */
