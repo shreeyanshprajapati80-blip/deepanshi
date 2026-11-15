@@ -151,7 +151,7 @@ window.SITE_CONTENT = {
     "placeholder": "Dil ki baat yahan likhiye...",
     "button": "Send ❤️",
     "thanks": "Shukriya Kanto ji ❤️ Aapke shabdon ne mera din bana diya.",
-    "endpoint": "shreeyanshprajapati522@gmail.com"
+    "endpoint": "https://formspree.io/f/meagaaze"
   },
   "final": {
     "heading": "And Finally, One Last Thing...",
